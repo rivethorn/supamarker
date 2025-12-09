@@ -9,3 +9,6 @@ Notice:
 
 TODO:
     - Add loading indicator
+    - Add listing ability to see the items, and where they are (table, bucket, both)
+    - Add --soft flag to remove the row from DB but keep the file in bucket
+    - Ask for confirmation to delete, after the presence is verified
