@@ -1,4 +1,0 @@
-supabase_url = "https://xxxxx.supabase.co"
-supabase_service_key = "service_role_key"
-bucket = "blog"
-table = "posts"
