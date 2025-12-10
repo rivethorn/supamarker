@@ -7,7 +7,7 @@ description = "A simple CLI tool to upload and delete files to and from your Sup
 license = "MIT"
 homepage = "https://github.com/rivethorn/supamarker"
 repository = "https://github.com/rivethorn/supamarker"
-readme = "README"
+readme = "README.md"
 
 
 [dependencies]
