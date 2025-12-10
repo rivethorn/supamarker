@@ -1,5 +1,8 @@
 # Supamarker
 
+![Crates.io Version](https://img.shields.io/crates/v/supamarker)
+
+
 A CLI tool for adding and removing Markdown files to and from a Supabase bucket. I use it for my blog site, you can use it for whatever.
 
 ## ⚠️ Warning
