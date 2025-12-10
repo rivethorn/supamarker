@@ -6,6 +6,22 @@ A CLI tool for adding and removing Markdown files to and from a Supabase bucket.
 
 **Never publish your Service Role Key** — it WILL grant unlimited power over your Supabase project to anyone who has it.
 
+## Installation
+
+You can install it from [crates.io](https://crates.io/crates/supamarker):
+
+```bash
+cargo install supamarker
+```
+
+Or you can clone the repository and build it from source:
+
+```bash
+git clone https://github.com/rivethorn/supamarker.git
+cd supamarker
+cargo build --release
+```
+
 ## Usage
 
 ```bash
