@@ -1,18 +1,157 @@
+#![cfg_attr(windows, windows_subsystem = "windows")]
+
 use std::{
     collections::HashSet,
-    fs, io,
-    io::Write,
+    fs,
+    io::{self, IsTerminal, Write, stdin},
     path::{Path, PathBuf},
 };
 
 use anyhow::{Context, Result, anyhow};
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
 use dotenvy::dotenv;
+use eframe::{App, Frame, egui};
 use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::multipart;
 use serde::Deserialize;
 use slug::slugify;
 use zenity::spinner::MultiSpinner;
+
+struct SupamarkerGUI {
+    config_path: Option<String>,
+    status: String,
+    slug_input: String,
+}
+
+impl SupamarkerGUI {
+    fn new(config_path: Option<String>) -> Self {
+        Self {
+            config_path,
+            status: "Ready".into(),
+            slug_input: String::new(),
+        }
+    }
+}
+
+impl App for SupamarkerGUI {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Supamarker");
+
+            ui.separator();
+
+            ui.horizontal(|ui| {
+                ui.label("Slug:");
+                ui.text_edit_singleline(&mut self.slug_input);
+            });
+
+            if ui.button("Delete Post").clicked() {
+                self.status = "Deleting...".into();
+
+                let slug = self.slug_input.clone();
+                let cfg = self.config_path.clone();
+
+                tokio::spawn(async move {
+                    if let Ok(cfg) = load_config(cfg.as_deref()) {
+                        let _ = delete_post(
+                            &cfg.supabase_url,
+                            &cfg.service_key,
+                            &cfg.bucket,
+                            &slug,
+                            &cfg.table,
+                            false,
+                        )
+                        .await;
+                    }
+                });
+            }
+
+            if ui.button("List Posts").clicked() {
+                self.status = "Listing… see terminal output".into();
+                let cfg = self.config_path.clone();
+
+                tokio::spawn(async move {
+                    if let Ok(cfg) = load_config(cfg.as_deref()) {
+                        let _ = list_items(
+                            &cfg.supabase_url,
+                            &cfg.service_key,
+                            &cfg.bucket,
+                            &cfg.table,
+                        )
+                        .await;
+                    }
+                });
+            }
+
+            ui.separator();
+            ui.label(format!("Status: {}", self.status));
+        });
+    }
+}
+
+async fn run_gui(config_path: Option<String>) -> Result<()> {
+    let options = eframe::NativeOptions::default();
+
+    let _ = eframe::run_native(
+        "Supamarker",
+        options,
+        Box::new(move |_cc| Ok(Box::new(SupamarkerGUI::new(config_path.clone())))),
+    );
+
+    Ok(())
+}
+
+async fn run_cli() -> Result<()> {
+    let args = Cli::parse();
+
+    match args.cmd {
+        Some(Commands::Publish { path }) => {
+            let config = load_config(args.config.as_deref())?;
+            publish(
+                &config.supabase_url,
+                &config.service_key,
+                &config.bucket,
+                &config.table,
+                &path,
+            )
+            .await?;
+        }
+        Some(Commands::Delete { slug, soft }) => {
+            let config = load_config(args.config.as_deref())?;
+            delete_post(
+                &config.supabase_url,
+                &config.service_key,
+                &config.bucket,
+                &slug,
+                &config.table,
+                soft,
+            )
+            .await?;
+        }
+        Some(Commands::List) => {
+            let config = load_config(args.config.as_deref())?;
+            list_items(
+                &config.supabase_url,
+                &config.service_key,
+                &config.bucket,
+                &config.table,
+            )
+            .await?;
+        }
+        Some(Commands::GenConfig) => {
+            let path = gen_config()?;
+            println!(
+                "Sample config written to {}. Update the values before running publish/list/delete.",
+                path.display()
+            );
+        }
+        None => {
+            Cli::command().print_help()?;
+        }
+    }
+
+    Ok(())
+}
 
 #[derive(Parser)]
 #[command(name = "supamarker")]
@@ -21,11 +160,13 @@ use zenity::spinner::MultiSpinner;
     version
 )]
 struct Cli {
+    #[arg(long)]
+    gui: bool,
     /// Optional path to a config file (TOML). If set, this is used first.
     #[arg(long, global = true)]
     config: Option<String>,
     #[command(subcommand)]
-    cmd: Commands,
+    cmd: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -438,49 +579,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
     let args = Cli::parse();
 
-    match args.cmd {
-        Commands::Publish { path } => {
-            let config = load_config(args.config.as_deref())?;
-            publish(
-                &config.supabase_url,
-                &config.service_key,
-                &config.bucket,
-                &config.table,
-                &path,
-            )
-            .await?;
-        }
-        Commands::Delete { slug, soft } => {
-            let config = load_config(args.config.as_deref())?;
-            delete_post(
-                &config.supabase_url,
-                &config.service_key,
-                &config.bucket,
-                &slug,
-                &config.table,
-                soft,
-            )
-            .await?;
-        }
-        Commands::List => {
-            let config = load_config(args.config.as_deref())?;
-            list_items(
-                &config.supabase_url,
-                &config.service_key,
-                &config.bucket,
-                &config.table,
-            )
-            .await?;
-        }
-        Commands::GenConfig => {
-            let path = gen_config()?;
-            println!(
-                "Sample config written to {}. Update the values before running publish/list/delete.",
-                path.display()
-            );
-        }
+    if args.gui {
+        run_gui(None).await?;
+        return Ok(());
     }
 
+    if args.cmd.is_some() || stdin().is_terminal() {
+        run_cli().await?;
+        return Ok(());
+    }
+
+    run_gui(None).await?;
     Ok(())
 }
 
