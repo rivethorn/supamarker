@@ -435,10 +435,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
     let args = Cli::parse();
 
-    let config = load_config(args.config.as_deref())?;
-
     match args.cmd {
         Commands::Publish { path } => {
+            let config = load_config(args.config.as_deref())?;
             publish(
                 &config.supabase_url,
                 &config.service_key,
@@ -449,6 +448,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await?;
         }
         Commands::Delete { slug, soft } => {
+            let config = load_config(args.config.as_deref())?;
             delete_post(
                 &config.supabase_url,
                 &config.service_key,
@@ -460,6 +460,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await?;
         }
         Commands::List => {
+            let config = load_config(args.config.as_deref())?;
             list_items(
                 &config.supabase_url,
                 &config.service_key,
