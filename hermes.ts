@@ -223,7 +223,7 @@ function parseFrontmatter(input: string): {
   }
 
   const [, yamlBlock, rest] = trimmed.split(/---\s*/s);
-  const fm = yaml.load(yamlBlock) as FrontMatter;
+  const fm = yaml.load(yamlBlock || "this is not good") as FrontMatter;
 
   return { frontmatter: fm, body: rest ?? "" };
 }
