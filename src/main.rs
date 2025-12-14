@@ -17,13 +17,13 @@ use serde::Deserialize;
 use slug::slugify;
 use zenity::spinner::MultiSpinner;
 
-struct SupamarkerGUI {
+struct HermesGUI {
     config_path: Option<String>,
     status: String,
     slug_input: String,
 }
 
-impl SupamarkerGUI {
+impl HermesGUI {
     fn new(config_path: Option<String>) -> Self {
         Self {
             config_path,
@@ -33,10 +33,10 @@ impl SupamarkerGUI {
     }
 }
 
-impl App for SupamarkerGUI {
+impl App for HermesGUI {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Supamarker");
+            ui.heading("Hermes-MD");
 
             ui.separator();
 
@@ -93,9 +93,9 @@ async fn run_gui(config_path: Option<String>) -> Result<()> {
     let options = eframe::NativeOptions::default();
 
     let _ = eframe::run_native(
-        "Supamarker",
+        "Hermes-MD",
         options,
-        Box::new(move |_cc| Ok(Box::new(SupamarkerGUI::new(config_path.clone())))),
+        Box::new(move |_cc| Ok(Box::new(HermesGUI::new(config_path.clone())))),
     );
 
     Ok(())
@@ -154,7 +154,7 @@ async fn run_cli() -> Result<()> {
 }
 
 #[derive(Parser)]
-#[command(name = "supamarker")]
+#[command(name = "hermes")]
 #[command(
     about = "Publish markdown posts to Supabase (storage + posts table)",
     version
@@ -500,9 +500,9 @@ fn candidate_config_paths(cli_path: Option<&str>) -> Vec<PathBuf> {
     #[cfg(unix)]
     {
         if let Ok(xdg) = std::env::var("XDG_CONFIG_HOME") {
-            paths.push(PathBuf::from(xdg).join("supamarker/config.toml"));
+            paths.push(PathBuf::from(xdg).join("hermes-md/config.toml"));
         } else if let Ok(home) = std::env::var("HOME") {
-            paths.push(PathBuf::from(home).join(".config/supamarker/config.toml"));
+            paths.push(PathBuf::from(home).join(".config/hermes-md/config.toml"));
         }
     }
 
@@ -510,12 +510,12 @@ fn candidate_config_paths(cli_path: Option<&str>) -> Vec<PathBuf> {
     {
         // On Windows, prefer APPDATA (roaming) or LOCALAPPDATA (local)
         if let Ok(appdata) = std::env::var("APPDATA") {
-            paths.push(PathBuf::from(appdata).join("supamarker/config.toml"));
+            paths.push(PathBuf::from(appdata).join("hermes-md/config.toml"));
         } else if let Ok(localappdata) = std::env::var("LOCALAPPDATA") {
-            paths.push(PathBuf::from(localappdata).join("supamarker/config.toml"));
+            paths.push(PathBuf::from(localappdata).join("hermes-md/config.toml"));
         } else if let Ok(userprofile) = std::env::var("USERPROFILE") {
-            // Fallback to USERPROFILE\.config\supamarker\config.toml
-            paths.push(PathBuf::from(userprofile).join(".config/supamarker/config.toml"));
+            // Fallback to USERPROFILE\.config\hermes-md\config.toml
+            paths.push(PathBuf::from(userprofile).join(".config/hermes-md/config.toml"));
         }
     }
 
@@ -597,11 +597,11 @@ fn default_config_path() -> Result<PathBuf> {
     #[cfg(unix)]
     {
         if let Ok(xdg) = std::env::var("XDG_CONFIG_HOME") {
-            return Ok(PathBuf::from(xdg).join("supamarker/config.toml"));
+            return Ok(PathBuf::from(xdg).join("hermes-md/config.toml"));
         }
 
         if let Ok(home) = std::env::var("HOME") {
-            return Ok(PathBuf::from(home).join(".config/supamarker/config.toml"));
+            return Ok(PathBuf::from(home).join(".config/hermes-md/config.toml"));
         }
 
         Err(anyhow!(
@@ -613,16 +613,16 @@ fn default_config_path() -> Result<PathBuf> {
     {
         // On Windows, prefer APPDATA (roaming) or LOCALAPPDATA (local)
         if let Ok(appdata) = std::env::var("APPDATA") {
-            return Ok(PathBuf::from(appdata).join("supamarker/config.toml"));
+            return Ok(PathBuf::from(appdata).join("hermes-md/config.toml"));
         }
 
         if let Ok(localappdata) = std::env::var("LOCALAPPDATA") {
-            return Ok(PathBuf::from(localappdata).join("supamarker/config.toml"));
+            return Ok(PathBuf::from(localappdata).join("hermes-md/config.toml"));
         }
 
         if let Ok(userprofile) = std::env::var("USERPROFILE") {
-            // Fallback to USERPROFILE\.config\supamarker\config.toml
-            return Ok(PathBuf::from(userprofile).join(".config/supamarker/config.toml"));
+            // Fallback to USERPROFILE\.config\hermes-md\config.toml
+            return Ok(PathBuf::from(userprofile).join(".config/hermes-md/config.toml"));
         }
 
         return Err(anyhow!(
