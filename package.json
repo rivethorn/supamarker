@@ -1,6 +1,6 @@
 {
-  "name": "supacli",
-  "module": "index.ts",
+  "name": "hermes",
+  "module": "hermes.ts",
   "type": "module",
   "private": true,
   "devDependencies": {
