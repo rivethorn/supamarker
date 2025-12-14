@@ -20,7 +20,8 @@ interface FrontMatter {
   title: string;
   tag: string;
   ttr: string;
-  slug?: string;
+  slug: string;
+  summary: string;
 }
 
 interface FileConfig {
@@ -122,6 +123,7 @@ async function publish(cfg: ResolvedConfig, filePath: string) {
       title: frontmatter.title,
       tag: frontmatter.tag,
       time_to_read: frontmatter.ttr,
+      summary: frontmatter.summary,
     },
     { onConflict: "slug" }
   );
