@@ -1,6 +1,6 @@
 # Hermes-MD
 
-![Crates.io Version](https://img.shields.io/crates/v/supamarker)
+![Crates.io Version](https://img.shields.io/crates/v/hermes-md)
 
 A CLI tool for adding and removing Markdown files to and from a Supabase bucket. I use it for my blog site, you can use it for whatever.
 
@@ -10,7 +10,7 @@ A CLI tool for adding and removing Markdown files to and from a Supabase bucket.
 
 ## Installation
 
-You can install it from [crates.io](https://crates.io/crates/supamarker):
+You can install it from [crates.io](https://crates.io/crates/hermes-md):
 
 ```bash
 cargo install hermes-md
