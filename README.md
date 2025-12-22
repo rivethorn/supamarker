@@ -3,7 +3,7 @@
 > Typescript rewrite
 >> Rust was NOT the best choice for this
 
-A CLI tool for adding and removing Markdown files to and from a Supabase bucket. I use it for my blog site, you can use it for whatever.
+A CLI tool for adding and removing Markdown files to and from a Supabase bucket. I used it for my blog site, you can use it for whatever you want.
 
 ## ⚠️ Warning
 
